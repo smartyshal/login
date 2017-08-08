@@ -5,7 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
-import unittest, time, re, json, httplib, base64, sys
+import unittest, time, re, json, httplib, base64, sys, os
 
 
 credentials = {"username": "sarora16",
@@ -20,15 +20,15 @@ class Alationlogin(unittest.TestCase):
     baseUrl = ""
     
     def setUp(self):
-        #self.driver = webdriver.Firefox()
-        if browserName and platform and version and baseUrl:
-            desired_cap = { "baseUrl": baseUrl, "browserName": browserName,"version" : version, "platform": platform }
+        if browserName and platform and version:
+            desired_cap = { "browserName": browserName,"version" : version, "platform": platform }
         else:
             desired_cap = self.getConfig()
+        
         self.driver = webdriver.Remote(command_executor='http://'+ credentials['username']+':'+credentials['access-key']+ '@ondemand.saucelabs.com:80/wd/hub',
-                        desired_capabilities=desired_cap)
+                       desired_capabilities=desired_cap)
         self.driver.implicitly_wait(30)
-        #self.base_url = "https://shashank.trialalation.com/"
+        self.base_url = baseUrl
         self.verificationErrors = []
         self.accept_next_alert = True
     
@@ -41,33 +41,33 @@ class Alationlogin(unittest.TestCase):
 
     def test_alationlogin(self):
         driver = self.driver
-        driver.get(driver.baseUrl + "login/")
+        driver.get(self.base_url + "login/")
         driver.find_element_by_id("email").clear()
         title = "Alation" 
         assert title == driver.title
-        # driver.find_element_by_id("email").send_keys("devops@alation.com")
-        # driver.find_element_by_id("password").clear()
-        # driver.find_element_by_id("password").send_keys("hHe3k7Lla7zuvKqhbemG")
-        # driver.find_element_by_xpath("//button").click()
-        # driver.implicitly_wait("5000")
-        # title = "Home | Alation"
-        # assert title == driver.title
+        driver.find_element_by_id("email").send_keys("devops@alation.com")
+        driver.find_element_by_id("password").clear()
+        driver.find_element_by_id("password").send_keys("hHe3k7Lla7zuvKqhbemG")
+        driver.find_element_by_xpath("//button").click()
+        driver.implicitly_wait("5000")
+        title = "Home | Alation"
+        assert title == driver.title
         set_test_status(driver.session_id, passed=(title == driver.title))
     
-    # def test_login_failure(self):
-    #     driver = self.driver
-    #     driver.get(self.base_url + "/login/")
-    #     driver.find_element_by_id("email").clear()
-    #     title = "Alation" 
-    #     assert title == driver.title
-    #     driver.find_element_by_id("email").send_keys("devops@test.com")
-    #     driver.find_element_by_id("password").clear()
-    #     driver.find_element_by_id("password").send_keys("Test@123")
-    #     driver.find_element_by_xpath("//button").click()
-    #     driver.implicitly_wait("5000")
-    #     #title = "Home | Alation"
-    #     assert title == driver.title
-    #     set_test_status(driver.session_id, passed=(title == driver.title))
+    def test_login_failure(self):
+        driver = self.driver
+        driver.get(self.base_url + "/login/")
+        driver.find_element_by_id("email").clear()
+        title = "Alation" 
+        assert title == driver.title
+        driver.find_element_by_id("email").send_keys("devops@test.com")
+        driver.find_element_by_id("password").clear()
+        driver.find_element_by_id("password").send_keys("Test@123")
+        driver.find_element_by_xpath("//button").click()
+        driver.implicitly_wait("5000")
+        #title = "Home | Alation"
+        assert title == driver.title
+        set_test_status(driver.session_id, passed=(title == driver.title))
 
     def is_element_present(self, how, what):
         try: self.driver.find_element(by=how, value=what)
@@ -107,7 +107,18 @@ def set_test_status(jobid, passed=True):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and len(sys.argv) == 4:
-        unittest.main(baseUrl= sys.argv[1],platform= sys.argv[2],browserName,version= sys.argv[2].split(" "))
+        #print(os.environ("SELENIUM_BROWSER"))
+        arg= sys.argv[3].split(" ")
+        baseUrl= sys.argv[1]
+        platform = sys.argv[2]
+        browserName= arg[0]
+        version= arg[1]
+        #del sys.argv[1:]
+        
+        #unittest.main()
+        suite = unittest.TestLoader().loadTestsFromTestCase(Alationlogin)
+        unittest.TextTestRunner(verbosity=2).run(suite)
+        
     else:
         print(len(sys.argv))
         #unittest.main()
