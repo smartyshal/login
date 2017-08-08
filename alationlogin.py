@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
+#!/bin/bash
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
-import unittest, time, re, json, httplib, base64, sys, os
+import unittest, time, re, json, httplib, base64, sys, os, xmlrunner
 
 
 credentials = {"username": "sarora16",
@@ -40,6 +40,11 @@ class Alationlogin(unittest.TestCase):
 
 
     def test_alationlogin(self):
+        '''
+            Case to test successful login. Two steps verification
+            * before entering credentials verify page title to ensure successful navigation
+            * after click on sign-in, verify successful page transition
+        '''
         driver = self.driver
         driver.get(self.base_url + "login/")
         driver.find_element_by_id("email").clear()
@@ -55,6 +60,10 @@ class Alationlogin(unittest.TestCase):
         set_test_status(driver.session_id, passed=(title == driver.title))
     
     def test_login_failure(self):
+        '''
+            Additional case to validate login un-successful if presented with 
+            invalid credentials
+        '''
         driver = self.driver
         driver.get(self.base_url + "/login/")
         driver.find_element_by_id("email").clear()
@@ -108,17 +117,16 @@ def set_test_status(jobid, passed=True):
 if __name__ == "__main__":
     if len(sys.argv) > 1 and len(sys.argv) == 4:
         #print(os.environ("SELENIUM_BROWSER"))
+        ## TODO: To support Jenkins environment variable, following split wouldn't be required.
+        ## And parameter argv would change to get a successful run.
         arg= sys.argv[3].split(" ")
         baseUrl= sys.argv[1]
         platform = sys.argv[2]
         browserName= arg[0]
         version= arg[1]
-        #del sys.argv[1:]
-        
-        #unittest.main()
         suite = unittest.TestLoader().loadTestsFromTestCase(Alationlogin)
-        unittest.TextTestRunner(verbosity=2).run(suite)
+        testRunner=xmlrunner.XMLTestRunner(output='test-reports')
+        testRunner.run(suite)
         
     else:
-        print(len(sys.argv))
-        #unittest.main()
+        unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
