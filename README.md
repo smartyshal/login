@@ -2,7 +2,7 @@ Requires python
 
 requires selenium
 
-requires xmlrunner
+requires unittest-xml-reporting
 
 usage-
 
