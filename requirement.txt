@@ -1,2 +1,2 @@
-selenium==3.2
+selenium==3.4
 unittest-xml-reporting
